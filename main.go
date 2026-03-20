@@ -70,7 +70,8 @@ func main() {
 	}
 
 	log.Printf("Serviço de Autenticação (Go) rodando na porta %q", port)
-	if err := server.ListenAndServe(":"+port, mux); err != nil {
+
+	if err := server.ListenAndServe(); err != nil {
 		log.Fatal(err)
 	}
 }
