@@ -69,7 +69,8 @@ func main() {
 		IdleTimeout:  60 * time.Second,
 	}
 
-	log.Printf("Serviço de Autenticação (Go) rodando na porta %q", port)
+	safePort := sanitizeForLog(port)
+	log.Printf("Serviço de Autenticação (Go) rodando na porta %s", safePort) // #nosec G706
 
 	if err := server.ListenAndServe(); err != nil {
 		log.Fatal(err)
@@ -89,4 +90,11 @@ func connectDB(databaseURL string) (*sql.DB, error) {
 
 	log.Println("Conectado ao PostgreSQL com sucesso!")
 	return db, nil
+}
+
+func sanitizeForLog(s string) string {
+	s = strings.ReplaceAll(s, "\n", "")
+	s = strings.ReplaceAll(s, "\r", "")
+	s = strings.ReplaceAll(s, "\t", " ")
+	return s
 }
