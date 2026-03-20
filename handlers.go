@@ -23,8 +23,11 @@ type CreateKeyResponse struct {
 
 // healthHandler é um simples endpoint de verificação de saúde
 func (a *App) healthHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(map[string]string{"status": "ok"})
+	if err := json.NewEncoder(w).Encode(map[string]string{"status": "ok"}); err != nil {
+		log.Printf("erro ao escrever resposta JSON: %v", err)
+	}
 }
 
 // validateKeyHandler verifica se uma chave de API (enviada via Header) é válida
@@ -46,14 +49,17 @@ func (a *App) validateKeyHandler(w http.ResponseWriter, r *http.Request) {
 	err := a.DB.QueryRow("SELECT id FROM api_keys WHERE key_hash = $1 AND is_active = true", keyHash).Scan(&id)
 	if err != nil {
 		// Se não encontrar (sql.ErrNoRows), ou qualquer outro erro, a chave é inválida
-		log.Printf("Falha na validação da chave (hash: %s...): %v", keyHash[:6], err)
+		log.Printf("Falha na validação da chave (hash: %q...): %v", keyHash[:6], err)
 		http.Error(w, "Chave de API inválida ou inativa", http.StatusUnauthorized)
 		return
 	}
 
 	// Chave válida
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(map[string]string{"message": "Chave válida"})
+	if err := json.NewEncoder(w).Encode(map[string]string{"message": "Chave válida"}); err != nil {
+		log.Printf("erro ao escrever resposta JSON: %v", err)
+	}
 }
 
 // createKeyHandler cria uma nova chave de API
@@ -96,12 +102,15 @@ func (a *App) createKeyHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	log.Printf("Nova chave criada com sucesso (ID: %d, Name: %s)", newID, req.Name)
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(CreateKeyResponse{
+	if err := json.NewEncoder(w).Encode(CreateKeyResponse{
 		Name:    req.Name,
-		Key:     newKey, // Retorna a chave em texto plano pela última vez
+		Key:     newKey,
 		Message: "Guarde esta chave com segurança! Você não poderá vê-la novamente.",
-	})
+	}); err != nil {
+		log.Printf("erro ao escrever resposta JSON: %v", err)
+	}
 }
 
 // --- Middleware ---
