@@ -43,7 +43,9 @@ jobs:
             ${{ runner.os }}-go-
 
       - name: Download dependencies
-        run: go mod download
+        run: |
+          go mod tidy
+          go mod download
 
       - name: Check formatting
         run: |
