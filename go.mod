@@ -18,5 +18,4 @@ require (
 	github.com/pkg/errors v0.9.1 // indirect
 	golang.org/x/crypto v0.31.0 // indirect
 	golang.org/x/text v0.21.0 // indirect
-	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 )
