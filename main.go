@@ -34,8 +34,7 @@ func main() {
 		log.Fatal("DATABASE_URL deve ser definida")
 	}
 
-	// masterKey := os.Getenv("MASTER_KEY")
-	masterKey := "super-secret-demo-123"
+	masterKey := os.Getenv("MASTER_KEY")
 	if masterKey == "" {
 		log.Fatal("MASTER_KEY deve ser definida")
 	}

@@ -66,18 +66,19 @@ jobs:
         run: go install golang.org/x/vuln/cmd/govulncheck@latest
 
       - name: Run govulncheck
-        run: |
-          set +e
-          ~/go/bin/govulncheck ./... > govuln.txt 2>&1
-          status=$?
-          cat govuln.txt
+        run: ~/go/bin/govulncheck ./...
+        # run: |
+        #   set +e
+        #   ~/go/bin/govulncheck ./... > govuln.txt 2>&1
+        #   status=$?
+        #   cat govuln.txt
 
-          if grep -q "GO-2026-4518" govuln.txt; then
-            echo "Ignoring GO-2026-4518 temporarily because no fixed version exists yet."
-            exit 0
-          fi
+        #   if grep -q "GO-2026-4518" govuln.txt; then
+        #     echo "Ignoring GO-2026-4518 temporarily because no fixed version exists yet."
+        #     exit 0
+        #   fi
 
-          exit $status
+        #   exit $status
 
       - name: Install gosec
         run: go install github.com/securego/gosec/v2/cmd/gosec@latest
