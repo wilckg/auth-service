@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"database/sql"
 	// "fmt"
 	"log"
@@ -11,6 +12,7 @@ import (
 
 	_ "github.com/jackc/pgx/v4/stdlib"
 	"github.com/joho/godotenv"
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 )
 
 // App struct (para injeção de dependência)
@@ -22,6 +24,10 @@ type App struct {
 func main() {
 	// Carrega o .env para desenvolvimento local. Em produção, isso não fará nada.
 	_ = godotenv.Load()
+
+	ctx := context.Background()
+	shutdown := initTracer(ctx, "auth-service")
+	defer shutdown(ctx)
 
 	// --- Configuração ---
 	port := os.Getenv("PORT")
@@ -53,14 +59,27 @@ func main() {
 
 	// --- Rotas da API ---
 	mux := http.NewServeMux()
-	mux.HandleFunc("/health", app.healthHandler)
+
+	mux.Handle(
+		"/health",
+		otelhttp.NewHandler(http.HandlerFunc(app.healthHandler), "GET /health"),
+	)
 
 	// Endpoint público para validar uma chave
-	mux.HandleFunc("/validate", app.validateKeyHandler)
+	mux.Handle(
+		"/validate",
+		otelhttp.NewHandler(http.HandlerFunc(app.validateKeyHandler), "POST /validate"),
+	)
 
 	// Endpoints de "admin" para criar/gerenciar chaves
 	// Eles são protegidos pelo middleware de autenticação
-	mux.Handle("/admin/keys", app.masterKeyAuthMiddleware(http.HandlerFunc(app.createKeyHandler)))
+	mux.Handle(
+		"/admin/keys",
+		otelhttp.NewHandler(
+			app.masterKeyAuthMiddleware(http.HandlerFunc(app.createKeyHandler)),
+			"POST /admin/keys",
+		),
+	)
 
 	server := &http.Server{
 		Addr:         ":" + port,
