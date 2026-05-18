@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"log"
-	"time"
 
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc"
@@ -21,7 +20,7 @@ func initTracer(ctx context.Context, serviceName string) func(context.Context) e
 	res, err := resource.New(
 		ctx,
 		resource.WithAttributes(
-			semconv.ServiceName(serviceName),
+			semconv.ServiceNameKey.String(serviceName),
 		),
 	)
 	if err != nil {
